@@ -2,10 +2,1178 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bowmasters: Ultimate Shop & Duel</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            margin: 0;
+            background: radial-gradient(circle at center, #090d16 0%, #020617 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            user-select: none;
+            touch-action: none;
+            overscroll-behavior: none;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: rgba(30, 41, 59, 0.88);
+            backdrop-filter: blur(16px);
+            padding: 20px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        .screen h1 {
+            font-size: 34px;
+            margin: 0 0 5px 0;
+            background: linear-gradient(135deg, #38bdf8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .coins-display {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            font-weight: 800;
+            font-size: 14px;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
+        }
+
+        .menu-input {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            color: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 12px;
+            outline: none;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .menu-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .menu-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+            color: white;
+            padding: 13px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            width: 100%;
+            transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .menu-btn.secondary {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 8px 20px rgba(51, 65, 85, 0.4);
+        }
+
+        .menu-btn:hover {
+            filter: brightness(1.15);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.6);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.96);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .shop-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .shop-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin: 5px 0 2px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .shop-item {
+            background: rgba(15, 23, 42, 0.75);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .shop-item:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .shop-item.owned {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .shop-item.selected {
+            border-color: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .price-tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+        }
+
+        #ui-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            width: 100%;
+            gap: 6px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+        .player-card {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(14px);
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+        }
+        .player-card span {
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .hp-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            padding: 1px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .hp-fill {
+            height: 100%;
+            width: 100%;
+            border-radius: 4px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #player-hp-fill { background: linear-gradient(90deg, #06b6d4, #38bdf8); box-shadow: 0 0 10px rgba(56,189,248,0.5); }
+        #helmet-hp-fill { background: linear-gradient(90deg, #a16207, #fbbf24); box-shadow: 0 0 10px rgba(251,191,36,0.5); }
+        #chest-hp-fill { background: linear-gradient(90deg, #64748b, #94a3b8); box-shadow: 0 0 10px rgba(148,163,184,0.5); }
+        
+        #center-hud {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        #turn-indicator {
+            font-size: 11px;
+            font-weight: 800;
+            color: #fbbf24;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        #timer-display {
+            font-size: 11px;
+            font-weight: 900;
+            color: #f43f5e;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 2px 10px;
+            border-radius: 15px;
+            border: 1px solid rgba(244, 63, 94, 0.4);
+        }
+
+        #settings-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f8fafc;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            flex-shrink: 0;
+        }
+        #settings-btn:active { transform: scale(0.92); }
+
+        #settings-overlay, #app-modal-overlay, #gameover-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+        }
+        #settings-panel, #app-modal-box, #gameover-panel {
+            background: rgba(30, 41, 59, 0.97);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 22px;
+            padding: 20px;
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        #settings-panel h2, #gameover-panel h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #38bdf8;
+            text-transform: uppercase;
+        }
+        
+        #chat-box {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(14px);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            padding: 4px 10px;
+            gap: 8px;
+        }
+        #chat-messages {
+            flex: 1;
+            font-size: 11px;
+            color: #cbd5e1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #chat-messages b { color: #f8fafc; }
+        #chat-input {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f8fafc;
+            padding: 5px 10px;
+            border-radius: 6px;
+            outline: none;
+            width: 110px;
+            font-size: 11px;
+        }
+        #chat-send {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        #canvas-wrap {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #090d16, #1e293b, #2563eb);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
+            border-radius: 14px;
+            cursor: crosshair;
+            border: 2px solid rgba(255,255,255,0.15);
+            width: 100%;
+            max-width: 1150px;
+            height: auto;
+            max-height: 52vh;
+            display: block;
+            touch-action: none;
+        }
+        #wind-indicator {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        .back-btn {
+            background: #ef4444 !important;
+        }
+
+        #gameover-stage {
+            font-size: 30px;
+            font-weight: 900;
+            color: #fbbf24;
+            margin: 4px 0;
+        }
+        #gameover-stage span { font-size: 13px; color: #94a3b8; display: block; }
+        #gameover-coins { color: #fbbf24; font-weight: 700; font-size: 13px; }
+
+        #stage-banner, #pause-badge {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fbbf24;
+            z-index: 25;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            white-space: nowrap;
+        }
+        #stage-banner.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
 </head>
 <body>
-    <p>hello negrla</p>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="screen">
+        <h1>Bowmasters</h1>
+        <div id="menu-coins" class="coins-display">💰 Coins: 150</div>
+        <input type="text" id="nickname-input" class="menu-input" placeholder="Enter nickname..." maxlength="12" value="Player">
+        <button class="menu-btn" onclick="startGame()">Start Game</button>
+        <button class="menu-btn" onclick="openShop()">Shop</button>
+    </div>
+
+    <!-- SHOP MENU -->
+    <div id="shop-menu" class="screen hidden">
+        <h1>Shop</h1>
+        <div id="shop-coins" class="coins-display">💰 Coins: 150</div>
+        
+        <div class="shop-container">
+            <div class="shop-section-title">Arrow Types</div>
+            <div class="shop-grid">
+                <div id="shop-arrow-standard" class="shop-item owned selected" onclick="buyOrSelectArrow('standard', 0)">
+                    <div><b>Standard Arrow</b><p style="font-size: 9px; color: #cbd5e1; margin: 2px 0;">Base power</p></div>
+                    <span id="price-arrow-standard" class="price-tag">Selected</span>
+                </div>
+                <div id="shop-arrow-fire" class="shop-item" onclick="buyOrSelectArrow('fire', 50)">
+                    <div><b>Fire Arrow</b><p style="font-size: 9px; color: #f43f5e; margin: 2px 0;">1.5x 🔥</p></div>
+                    <span id="price-arrow-fire" class="price-tag">💰 50</span>
+                </div>
+                <div id="shop-arrow-poison" class="shop-item" onclick="buyOrSelectArrow('poison', 80)">
+                    <div><b>Poison Arrow</b><p style="font-size: 9px; color: #10b981; margin: 2px 0;">1.3x 🧪</p></div>
+                    <span id="price-arrow-poison" class="price-tag">💰 80</span>
+                </div>
+                <div id="shop-arrow-heavy" class="shop-item" onclick="buyOrSelectArrow('heavy', 120)">
+                    <div><b>Heavy Arrow</b><p style="font-size: 9px; color: #38bdf8; margin: 2px 0;">2.0x ⚡</p></div>
+                    <span id="price-arrow-heavy" class="price-tag">💰 120</span>
+                </div>
+                <div id="shop-arrow-explosive" class="shop-item" onclick="buyOrSelectArrow('explosive', 160)">
+                    <div><b>Explosive Arrow</b><p style="font-size: 9px; color: #f59e0b; margin: 2px 0;">2.5x 💣</p></div>
+                    <span id="price-arrow-explosive" class="price-tag">💰 160</span>
+                </div>
+                <div id="shop-arrow-laser" class="shop-item" onclick="buyOrSelectArrow('laser', 200)">
+                    <div><b>Laser Arrow</b><p style="font-size: 9px; color: #a855f7; margin: 2px 0;">3.0x 🔮</p></div>
+                    <span id="price-arrow-laser" class="price-tag">💰 200</span>
+                </div>
+            </div>
+
+            <div class="shop-section-title">Helmets (Head Protection)</div>
+            <div class="shop-grid">
+                <div id="shop-helmet-none" class="shop-item owned selected" onclick="buyOrSelectHelmet('none', 0)">
+                    <div><b>No Helmet</b><p style="font-size: 9px; color: #cbd5e1; margin: 2px 0;">0 HP</p></div>
+                    <span id="price-helmet-none" class="price-tag">Selected</span>
+                </div>
+                <div id="shop-helmet-leather" class="shop-item" onclick="buyOrSelectHelmet('leather', 30)">
+                    <div><b>Leather Helmet</b><p style="font-size: 9px; color: #a16207; margin: 2px 0;">+30 HP 🛡️</p></div>
+                    <span id="price-helmet-leather" class="price-tag">💰 30</span>
+                </div>
+                <div id="shop-helmet-iron" class="shop-item" onclick="buyOrSelectHelmet('iron', 60)">
+                    <div><b>Iron Helmet</b><p style="font-size: 9px; color: #94a3b8; margin: 2px 0;">+60 HP 🛡️</p></div>
+                    <span id="price-helmet-iron" class="price-tag">💰 60</span>
+                </div>
+                <div id="shop-helmet-knight" class="shop-item" onclick="buyOrSelectHelmet('knight', 90)">
+                    <div><b>Knight Helmet</b><p style="font-size: 9px; color: #38bdf8; margin: 2px 0;">+100 HP ⚔️</p></div>
+                    <span id="price-helmet-knight" class="price-tag">💰 90</span>
+                </div>
+                <div id="shop-helmet-gold" class="shop-item" onclick="buyOrSelectHelmet('gold', 130)">
+                    <div><b>Gold Helmet</b><p style="font-size: 9px; color: #fbbf24; margin: 2px 0;">+140 HP 👑</p></div>
+                    <span id="price-helmet-gold" class="price-tag">💰 130</span>
+                </div>
+                <div id="shop-helmet-diamond" class="shop-item" onclick="buyOrSelectHelmet('diamond', 180)">
+                    <div><b>Diamond Helmet</b><p style="font-size: 9px; color: #06b6d4; margin: 2px 0;">+200 HP 💎</p></div>
+                    <span id="price-helmet-diamond" class="price-tag">💰 180</span>
+                </div>
+            </div>
+
+            <div class="shop-section-title">Chest Armor (Body Protection)</div>
+            <div class="shop-grid">
+                <div id="shop-chest-none" class="shop-item owned selected" onclick="buyOrSelectChest('none', 0)">
+                    <div><b>No Armor</b><p style="font-size: 9px; color: #cbd5e1; margin: 2px 0;">0 HP</p></div>
+                    <span id="price-chest-none" class="price-tag">Selected</span>
+                </div>
+                <div id="shop-chest-leather" class="shop-item" onclick="buyOrSelectChest('leather', 40)">
+                    <div><b>Leather Armor</b><p style="font-size: 9px; color: #a16207; margin: 2px 0;">+40 HP 🧥</p></div>
+                    <span id="price-chest-leather" class="price-tag">💰 40</span>
+                </div>
+                <div id="shop-chest-iron" class="shop-item" onclick="buyOrSelectChest('iron', 80)">
+                    <div><b>Iron Armor</b><p style="font-size: 9px; color: #94a3b8; margin: 2px 0;">+80 HP 🛡️</p></div>
+                    <span id="price-chest-iron" class="price-tag">💰 80</span>
+                </div>
+                <div id="shop-chest-knight" class="shop-item" onclick="buyOrSelectChest('knight', 120)">
+                    <div><b>Knight Armor</b><p style="font-size: 9px; color: #38bdf8; margin: 2px 0;">+130 HP ⚔️</p></div>
+                    <span id="price-chest-knight" class="price-tag">💰 120</span>
+                </div>
+                <div id="shop-chest-gold" class="shop-item" onclick="buyOrSelectChest('gold', 170)">
+                    <div><b>Gold Armor</b><p style="font-size: 9px; color: #fbbf24; margin: 2px 0;">+180 HP 👑</p></div>
+                    <span id="price-chest-gold" class="price-tag">💰 170</span>
+                </div>
+                <div id="shop-chest-diamond" class="shop-item" onclick="buyOrSelectChest('diamond', 230)">
+                    <div><b>Diamond Armor</b><p style="font-size: 9px; color: #06b6d4; margin: 2px 0;">+250 HP 💎</p></div>
+                    <span id="price-chest-diamond" class="price-tag">💰 230</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="menu-btn back-btn" onclick="closeShop()">Back</button>
+    </div>
+
+    <!-- GAME FIELD -->
+    <div id="game-container" class="hidden">
+        <div id="ui-container">
+            <div class="player-card">
+                <span style="color: #38bdf8;"><span id="display-nickname">Player</span></span>
+                <div style="display: flex; flex-direction: column; gap: 2px; width: 100%;">
+                    <div style="font-size: 9px; display:flex; justify-content:space-between; color:#38bdf8;"><span>HP:</span><span id="player-hp-text">100/100</span></div>
+                    <div class="hp-bar-container"><div id="player-hp-fill" class="hp-fill"></div></div>
+                    <div style="font-size: 9px; display:flex; justify-content:space-between; color:#fbbf24;"><span>Helmet:</span><span id="helmet-hp-text">0/0</span></div>
+                    <div class="hp-bar-container"><div id="helmet-hp-fill" class="hp-fill"></div></div>
+                    <div style="font-size: 9px; display:flex; justify-content:space-between; color:#94a3b8;"><span>Chest:</span><span id="chest-hp-text">0/0</span></div>
+                    <div class="hp-bar-container"><div id="chest-hp-fill" class="hp-fill"></div></div>
+                </div>
+            </div>
+            
+            <div id="center-hud">
+                <div id="turn-indicator">Your turn</div>
+                <div id="timer-display">⏱ 15s</div>
+            </div>
+
+            <div class="player-card" style="text-align: right;">
+                <span style="color: #fb7185;"><span id="wave-counter" style="font-size: 10px; color: #fbbf24;">S: 1</span> Duel</span>
+                <span id="enemy-status" style="font-size: 10px; color: #cbd5e1;">Bot</span>
+            </div>
+
+            <button id="settings-btn" onclick="openSettings()" title="Settings">⚙️</button>
+        </div>
+
+        <div id="chat-box">
+            <div id="chat-messages"><b>Arena Bot:</b> "Only one champion can stand! 🎯"</div>
+            <input type="text" id="chat-input" placeholder="Message..." />
+            <button id="chat-send" onclick="sendPlayerMessage()">Send</button>
+        </div>
+
+        <div id="canvas-wrap">
+            <canvas id="gameCanvas" width="1150" height="540"></canvas>
+            <div id="wind-indicator">Wind: 0</div>
+            <div id="pause-badge" class="hidden">⏸ Paused</div>
+            <div id="stage-banner"></div>
+        </div>
+    </div>
+
+    <!-- SETTINGS OVERLAY -->
+    <div id="settings-overlay" class="hidden">
+        <div id="settings-panel">
+            <h2>Settings</h2>
+            <button class="menu-btn" onclick="resumeGame()">▶ Resume</button>
+            <button class="menu-btn secondary" id="mute-btn" onclick="toggleMute()">🔊 Mute</button>
+            <button class="menu-btn back-btn" onclick="confirmMainMenu()">🏠 Main Menu</button>
+        </div>
+    </div>
+
+    <!-- GENERIC MODAL -->
+    <div id="app-modal-overlay" class="hidden">
+        <div id="app-modal-box">
+            <div id="app-modal-title" style="font-size: 16px; font-weight: 800; color: #f8fafc;"></div>
+            <div id="app-modal-text" style="font-size: 13px; color: #cbd5e1;"></div>
+            <div id="app-modal-buttons" style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;"></div>
+        </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="gameover-overlay" class="hidden">
+        <div id="gameover-panel">
+            <h1>Defeated</h1>
+            <div id="gameover-stage"><span>You reached</span>Stage 1</div>
+            <div id="gameover-coins">💰 +0 coins earned</div>
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <button class="menu-btn" onclick="playAgainFromGameOver()">🔁 Play Again</button>
+                <button class="menu-btn back-btn" onclick="mainMenuFromGameOver()">🏠 Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const GROUND_Y = 435;
+        const GRAVITY = 0.3;
+        let windForce = 0;
+        let turn = 'player';
+        
+        let currentWave = 1;
+        let timeLeft = 15;
+        let timerInterval = null;
+        let gameStarted = false;
+        let playerName = "Player";
+        let coins = 150;
+
+        let paused = false;
+        let muted = false;
+
+        let ownedArrows = { standard: true, fire: false, poison: false, heavy: false, explosive: false, laser: false };
+        let ownedHelmets = { none: true, leather: false, iron: false, knight: false, gold: false, diamond: false };
+        let ownedChests = { none: true, leather: false, iron: false, knight: false, gold: false, diamond: false };
+        
+        let selectedArrow = 'standard';
+        let selectedHelmet = 'none';
+        let selectedChest = 'none';
+
+        function loadGameStorage() {
+            try {
+                const savedCoins = localStorage.getItem("bowmasters_coins");
+                if (savedCoins !== null) coins = parseInt(savedCoins, 10);
+                const savedArrows = localStorage.getItem("bowmasters_arrows");
+                if (savedArrows) ownedArrows = JSON.parse(savedArrows);
+                const savedHelmets = localStorage.getItem("bowmasters_helmets");
+                if (savedHelmets) ownedHelmets = JSON.parse(savedHelmets);
+                const savedChests = localStorage.getItem("bowmasters_chests");
+                if (savedChests) ownedChests = JSON.parse(savedChests);
+                const selArr = localStorage.getItem("bowmasters_sel_arrow");
+                if (selArr) selectedArrow = selArr;
+                const selHelm = localStorage.getItem("bowmasters_sel_helmet");
+                if (selHelm) selectedHelmet = selHelm;
+                const selChest = localStorage.getItem("bowmasters_sel_chest");
+                if (selChest) selectedChest = selChest;
+                const savedName = localStorage.getItem("bowmasters_name");
+                if (savedName) {
+                    playerName = savedName;
+                    document.getElementById("nickname-input").value = playerName;
+                }
+            } catch (e) {}
+        }
+
+        function saveGameStorage() {
+            try {
+                localStorage.setItem("bowmasters_coins", coins);
+                localStorage.setItem("bowmasters_arrows", JSON.stringify(ownedArrows));
+                localStorage.setItem("bowmasters_helmets", JSON.stringify(ownedHelmets));
+                localStorage.setItem("bowmasters_chests", JSON.stringify(ownedChests));
+                localStorage.setItem("bowmasters_sel_arrow", selectedArrow);
+                localStorage.setItem("bowmasters_sel_helmet", selectedHelmet);
+                localStorage.setItem("bowmasters_sel_chest", selectedChest);
+                localStorage.setItem("bowmasters_name", playerName);
+            } catch (e) {}
+        }
+
+        loadGameStorage();
+
+        let player = {
+            x: 140, y: GROUND_Y, width: 50, height: 80,
+            hp: 100, maxHp: 100,
+            helmetHp: 0, helmetMaxHp: 0,
+            chestHp: 0, chestMaxHp: 0,
+            color: "#38bdf8", hits: [], speech: "", speechTimer: 0
+        };
+
+        let enemy = null;
+        let arrow = { x: 0, y: 0, vx: 0, vy: 0, active: false, rotation: 0, shooter: '', stuck: false, type: 'standard' };
+        let particles = [];
+        let floatingTexts = [];
+        let screenShakeTimer = 0;
+        let isAiming = false;
+        let startX = 0, startY = 0;
+        let mouseX = 0, mouseY = 0;
+
+        const botNames = ["Shadow", "Viper", "Sniper", "Ghost", "Falcon", "Hunter", "Blaze", "Apex"];
+        let currentBotName = "Shadow Bot";
+        const aiTaunts = ["Nice try! 🤭", "Adjust your aim! 😆", "My turn now! 🔥", "Whoops! 🎯😂"];
+
+        function showAppModal(title, text, buttons) {
+            document.getElementById("app-modal-title").innerText = title;
+            document.getElementById("app-modal-text").innerText = text;
+            let btnWrap = document.getElementById("app-modal-buttons");
+            btnWrap.innerHTML = "";
+            buttons.forEach(b => {
+                let btn = document.createElement("button");
+                btn.className = "menu-btn" + (b.style === 'secondary' ? " secondary" : b.style === 'danger' ? " back-btn" : "");
+                btn.innerText = b.label;
+                btn.onclick = () => { hideAppModal(); if (b.onClick) b.onClick(); };
+                btnWrap.appendChild(btn);
+            });
+            document.getElementById("app-modal-overlay").classList.remove("hidden");
+        }
+        function hideAppModal() { document.getElementById("app-modal-overlay").classList.add("hidden"); }
+        function showAppAlert(title, text) { showAppModal(title, text, [{ label: "OK", onClick: null }]); }
+
+        function updateCoinsUI() {
+            document.getElementById("menu-coins").innerText = `💰 Coins: ${coins}`;
+            document.getElementById("shop-coins").innerText = `💰 Coins: ${coins}`;
+            saveGameStorage();
+        }
+
+        function buyOrSelectArrow(type, price) {
+            if (ownedArrows[type]) { selectedArrow = type; updateShopUI(); saveGameStorage(); }
+            else if (coins >= price) { coins -= price; ownedArrows[type] = true; selectedArrow = type; updateCoinsUI(); updateShopUI(); }
+            else { showAppAlert("Not Enough Coins", "Win more duels to earn coins! 💰"); }
+        }
+        function buyOrSelectHelmet(type, price) {
+            if (ownedHelmets[type]) { selectedHelmet = type; updateShopUI(); saveGameStorage(); }
+            else if (coins >= price) { coins -= price; ownedHelmets[type] = true; selectedHelmet = type; updateCoinsUI(); updateShopUI(); }
+            else { showAppAlert("Not Enough Coins", "Win more duels to earn coins! 💰"); }
+        }
+        function buyOrSelectChest(type, price) {
+            if (ownedChests[type]) { selectedChest = type; updateShopUI(); saveGameStorage(); }
+            else if (coins >= price) { coins -= price; ownedChests[type] = true; selectedChest = type; updateCoinsUI(); updateShopUI(); }
+            else { showAppAlert("Not Enough Coins", "Win more duels to earn coins! 💰"); }
+        }
+
+        function updateShopUI() {
+            ['standard', 'fire', 'poison', 'heavy', 'explosive', 'laser'].forEach(t => {
+                let el = document.getElementById('shop-arrow-' + t);
+                let priceEl = document.getElementById('price-arrow-' + t);
+                if(!el) return;
+                el.classList.remove('owned', 'selected');
+                if (selectedArrow === t) { el.classList.add('selected'); priceEl.innerText = "Selected"; }
+                else if (ownedArrows[t]) { el.classList.add('owned'); priceEl.innerText = "Owned"; }
+                else { let prices = { fire: 50, poison: 80, heavy: 120, explosive: 160, laser: 200 }; priceEl.innerText = `💰 ${prices[t]}`; }
+            });
+            ['none', 'leather', 'iron', 'knight', 'gold', 'diamond'].forEach(t => {
+                let el = document.getElementById('shop-helmet-' + t);
+                let priceEl = document.getElementById('price-helmet-' + t);
+                if(!el) return;
+                el.classList.remove('owned', 'selected');
+                if (selectedHelmet === t) { el.classList.add('selected'); priceEl.innerText = "Selected"; }
+                else if (ownedHelmets[t]) { el.classList.add('owned'); priceEl.innerText = "Owned"; }
+                else { let prices = { leather: 30, iron: 60, knight: 90, gold: 130, diamond: 180 }; priceEl.innerText = `💰 ${prices[t]}`; }
+            });
+            ['none', 'leather', 'iron', 'knight', 'gold', 'diamond'].forEach(t => {
+                let el = document.getElementById('shop-chest-' + t);
+                let priceEl = document.getElementById('price-chest-' + t);
+                if(!el) return;
+                el.classList.remove('owned', 'selected');
+                if (selectedChest === t) { el.classList.add('selected'); priceEl.innerText = "Selected"; }
+                else if (ownedChests[t]) { el.classList.add('owned'); priceEl.innerText = "Owned"; }
+                else { let prices = { leather: 40, iron: 80, knight: 120, gold: 170, diamond: 230 }; priceEl.innerText = `💰 ${prices[t]}`; }
+            });
+        }
+
+        function startGame() {
+            let inputName = document.getElementById("nickname-input").value.trim();
+            if (inputName !== "") playerName = inputName;
+            document.getElementById("display-nickname").innerText = playerName;
+            saveGameStorage();
+
+            player.maxHp = 100; player.hp = 100;
+            let hHp = 0;
+            if (selectedHelmet === 'leather') hHp = 30; if (selectedHelmet === 'iron') hHp = 60; if (selectedHelmet === 'knight') hHp = 100; if (selectedHelmet === 'gold') hHp = 140; if (selectedHelmet === 'diamond') hHp = 200;
+            player.helmetMaxHp = hHp; player.helmetHp = hHp;
+
+            let cHp = 0;
+            if (selectedChest === 'leather') cHp = 40; if (selectedChest === 'iron') cHp = 80; if (selectedChest === 'knight') cHp = 130; if (selectedChest === 'gold') cHp = 180; if (selectedChest === 'diamond') cHp = 250;
+            player.chestMaxHp = cHp; player.chestHp = cHp;
+
+            updatePlayerUI();
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("game-container").classList.remove("hidden");
+            gameStarted = true; paused = false; currentWave = 1; player.hits = [];
+            initDuelEnemy();
+            startPlayerTurn();
+        }
+
+        function updatePlayerUI() {
+            document.getElementById("player-hp-fill").style.width = (player.hp / player.maxHp) * 100 + '%';
+            document.getElementById("player-hp-text").innerText = `${player.hp}/${player.maxHp}`;
+            let helmetPercent = player.helmetMaxHp > 0 ? (player.helmetHp / player.helmetMaxHp) * 100 : 0;
+            document.getElementById("helmet-hp-fill").style.width = helmetPercent + '%';
+            document.getElementById("helmet-hp-text").innerText = `${player.helmetHp}/${player.helmetMaxHp}`;
+            let chestPercent = player.chestMaxHp > 0 ? (player.chestHp / player.chestMaxHp) * 100 : 0;
+            document.getElementById("chest-hp-fill").style.width = chestPercent + '%';
+            document.getElementById("chest-hp-text").innerText = `${player.chestHp}/${player.chestMaxHp}`;
+        }
+
+        function openShop() {
+            document.getElementById("main-menu").classList.add("hidden");
+            document.getElementById("shop-menu").classList.remove("hidden");
+            updateShopUI();
+        }
+        function closeShop() {
+            document.getElementById("shop-menu").classList.add("hidden");
+            document.getElementById("main-menu").classList.remove("hidden");
+            saveGameStorage();
+        }
+        function openSettings() {
+            if (!gameStarted) return;
+            paused = true; stopTimer();
+            document.getElementById("settings-overlay").classList.remove("hidden");
+            document.getElementById("pause-badge").classList.remove("hidden");
+        }
+        function resumeGame() {
+            paused = false;
+            document.getElementById("settings-overlay").classList.add("hidden");
+            document.getElementById("pause-badge").classList.add("hidden");
+            if (turn === 'player' && !arrow.active && gameStarted) resumeTimer();
+        }
+        function toggleMute() {
+            muted = !muted;
+            document.getElementById("mute-btn").innerText = muted ? "🔇 Unmute" : "🔊 Mute";
+        }
+        function confirmMainMenu() {
+            showAppModal("Leave Duel?", "Return to main menu?", [
+                { label: "Yes", style: "danger", onClick: () => {
+                    document.getElementById("settings-overlay").classList.add("hidden");
+                    document.getElementById("pause-badge").classList.add("hidden");
+                    paused = false; stopTimer(); arrow.active = false; resetGame();
+                }},
+                { label: "Cancel", style: "secondary", onClick: null }
+            ]);
+        }
+
+        function initDuelEnemy() {
+            currentBotName = botNames[Math.floor(Math.random() * botNames.length)] + " Bot";
+            let botHp = 60 + (currentWave * 20);
+            enemy = { x: 820, y: GROUND_Y, width: 50, height: 80, hp: botHp, maxHp: botHp, color: "#f43f5e", hits: [], speech: "", speechTimer: 0 };
+            document.getElementById("wave-counter").innerText = "S: " + currentWave;
+            document.getElementById("enemy-status").innerText = currentBotName;
+            setChatText(currentBotName, "Beat me if you can!");
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval); timeLeft = 15;
+            document.getElementById("timer-display").innerText = `⏱ ${timeLeft}s`;
+            timerInterval = setInterval(tickTimer, 1000);
+        }
+        function resumeTimer() {
+            clearInterval(timerInterval);
+            document.getElementById("timer-display").innerText = `⏱ ${timeLeft}s`;
+            timerInterval = setInterval(tickTimer, 1000);
+        }
+        function tickTimer() {
+            if (turn !== 'player' || arrow.active || !gameStarted || paused) return;
+            timeLeft--;
+            document.getElementById("timer-display").innerText = `⏱ ${timeLeft}s`;
+            if (timeLeft <= 0) { clearInterval(timerInterval); startAITurn(); }
+        }
+        function stopTimer() { clearInterval(timerInterval); }
+        function triggerShake(duration = 20) { screenShakeTimer = duration; }
+        function showSpeech(char, text, duration = 240) { char.speech = text; char.speechTimer = duration; }
+        function setChatText(sender, text) { document.getElementById("chat-messages").innerHTML = `<b>${sender}:</b> "${text}"`; }
+        function addFloatingText(x, y, text, color = "#fbbf24") { floatingTexts.push({ x, y, text, color, alpha: 1, vy: -1.5 }); }
+
+        function sendPlayerMessage() {
+            let input = document.getElementById("chat-input");
+            let text = input.value.trim();
+            if (text !== "") { setChatText(playerName, text); showSpeech(player, text, 240); input.value = ""; }
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playShootSound() {
+            if (muted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        }
+        function playHitSound() {
+            if (muted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.7, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+        }
+
+        const mountains = [];
+        for(let i=0; i<6; i++) { mountains.push({x: i*230, y: Math.random()*90 + 110, width: 320, height: GROUND_Y - (Math.random()*90 + 110)}); }
+
+        function updateWind() {
+            windForce = (Math.random() - 0.5) * 1.5;
+            document.getElementById("wind-indicator").innerText = "Wind: " + (windForce > 0 ? `➡ ${windForce.toFixed(1)}` : `⬅ ${(-windForce).toFixed(1)}`);
+        }
+        updateWind();
+
+        function getCanvasPoint(clientX, clientY) {
+            let rect = canvas.getBoundingClientRect();
+            let scaleX = canvas.width / rect.width;
+            let scaleY = canvas.height / rect.height;
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+        }
+
+        function handleAimStart(clientX, clientY) {
+            if (!arrow.active && turn === 'player' && gameStarted && !paused) {
+                isAiming = true;
+                let p = getCanvasPoint(clientX, clientY);
+                startX = p.x; startY = p.y; mouseX = p.x; mouseY = p.y;
+            }
+        }
+        function handleAimMove(clientX, clientY) {
+            let p = getCanvasPoint(clientX, clientY);
+            mouseX = p.x; mouseY = p.y;
+        }
+        function handleAimEnd(clientX, clientY) {
+            if (isAiming && turn === 'player' && gameStarted && !paused) {
+                stopTimer();
+                let p = getCanvasPoint(clientX, clientY);
+                arrow.x = player.x + 35; arrow.y = player.y - 50;
+                arrow.vx = (startX - p.x) * 0.11;
+                arrow.vy = (startY - p.y) * 0.11;
+                arrow.active = true; arrow.stuck = false; arrow.shooter = 'player'; arrow.type = selectedArrow;
+                isAiming = false; turn = 'animating';
+                playShootSound();
+            } else { isAiming = false; }
+        }
+
+        canvas.addEventListener("mousedown", (e) => handleAimStart(e.clientX, e.clientY));
+        canvas.addEventListener("mousemove", (e) => handleAimMove(e.clientX, e.clientY));
+        canvas.addEventListener("mouseup", (e) => handleAimEnd(e.clientX, e.clientY));
+
+        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); let t = e.touches[0]; if (t) handleAimStart(t.clientX, t.clientY); }, { passive: false });
+        canvas.addEventListener("touchmove", (e) => { e.preventDefault(); let t = e.touches[0]; if (t) handleAimMove(t.clientX, t.clientY); }, { passive: false });
+        canvas.addEventListener("touchend", (e) => { e.preventDefault(); let t = e.changedTouches[0]; if (t) handleAimEnd(t.clientX, t.clientY); }, { passive: false });
+
+        function createExplosion(x, y, color = "#ef4444") {
+            playHitSound(); triggerShake(22);
+            for (let i = 0; i < 40; i++) {
+                particles.push({ x, y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12 - 3, radius: Math.random() * 6 + 2, alpha: 1, color: Math.random() > 0.4 ? color : "#fbbf24" });
+            }
+        }
+
+        function update() {
+            if (!gameStarted || paused) return;
+            if (player.speechTimer > 0) player.speechTimer--; else player.speech = "";
+            if (enemy && enemy.speechTimer > 0) enemy.speechTimer--; else if(enemy) enemy.speech = "";
+            if (screenShakeTimer > 0) screenShakeTimer--;
+
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.28; p.alpha -= 0.015; });
+            particles = particles.filter(p => p.alpha > 0);
+            floatingTexts.forEach(ft => { ft.y += ft.vy; ft.alpha -= 0.018; });
+            floatingTexts = floatingTexts.filter(ft => ft.alpha > 0);
+
+            if (arrow.active && !arrow.stuck) {
+                arrow.vx += windForce * 0.02;
+                arrow.vy += GRAVITY;
+                arrow.x += arrow.vx; arrow.y += arrow.vy;
+                arrow.rotation = Math.atan2(arrow.vy, arrow.vx);
+
+                particles.push({ x: arrow.x, y: arrow.y, vx: 0, vy: 0, radius: 2.5, alpha: 0.6, color: "#94a3b8" });
+
+                if (arrow.y >= GROUND_Y - 2) {
+                    arrow.y = GROUND_Y - 2; arrow.stuck = true;
+                    createExplosion(arrow.x, arrow.y, "#94a3b8");
+                    setTimeout(() => finishShot(), 1000);
+                }
+
+                if (arrow.shooter === 'player' && enemy && enemy.hp > 0) {
+                    let headX = enemy.x + enemy.width / 2; let headY = enemy.y - enemy.height - 18;
+                    let mult = arrow.type === 'fire' ? 1.5 : arrow.type === 'poison' ? 1.3 : arrow.type === 'heavy' ? 2.0 : arrow.type === 'explosive' ? 2.5 : arrow.type === 'laser' ? 3.0 : 1.0;
+
+                    if (Math.hypot(arrow.x - headX, arrow.y - headY) < 35) {
+                        let dmg = Math.round(35 * mult); enemy.hp = Math.max(0, enemy.hp - dmg);
+                        createExplosion(headX, headY, "#f43f5e"); addFloatingText(headX, headY - 20, `-${dmg} HEAD! 💥`, "#ef4444");
+                        enemy.hits.push({x: arrow.x - enemy.x, y: arrow.y - enemy.y});
+                        arrow.stuck = true; checkDuelWin(); setTimeout(() => finishShot(), 1000);
+                    } else if (arrow.x > enemy.x && arrow.x < enemy.x + enemy.width && arrow.y > enemy.y - enemy.height && arrow.y < enemy.y) {
+                        let dmg = Math.round(20 * mult); enemy.hp = Math.max(0, enemy.hp - dmg);
+                        createExplosion(arrow.x, arrow.y, "#fbbf24"); addFloatingText(arrow.x, arrow.y - 20, `-${dmg} HIT`, "#fbbf24");
+                        enemy.hits.push({x: arrow.x - enemy.x, y: arrow.y - enemy.y});
+                        arrow.stuck = true; checkDuelWin(); setTimeout(() => finishShot(), 1000);
+                    }
+                }
+                
+                if (arrow.shooter === 'ai') {
+                    let headX = player.x + player.width / 2; let headY = player.y - player.height - 18;
+                    if (Math.hypot(arrow.x - headX, arrow.y - headY) < 35) {
+                        let dmg = 30; createExplosion(headX, headY, "#fbbf24");
+                        if (player.helmetHp > 0) {
+                            if (player.helmetHp >= dmg) player.helmetHp -= dmg;
+                            else { let rem = dmg - player.helmetHp; player.helmetHp = 0; player.hp -= rem; }
+                        } else { player.hp -= dmg; }
+                        player.hits.push({x: arrow.x - player.x, y: arrow.y - player.y});
+                        updatePlayerUI(); arrow.stuck = true; checkPlayerDeath();
+                        setTimeout(() => finishShot(), 1000);
+                    }
+                }
+                if (arrow.x > canvas.width || arrow.x < 0 || arrow.y < -150) {
+                    arrow.stuck = true; setTimeout(() => finishShot(), 1000);
+                }
+            }
+        }
+
+        function finishShot() {
+            arrow.active = false;
+            if (enemy && enemy.hp > 0 && player.hp > 0) {
+                if (arrow.shooter === 'player') startAITurn(); else startPlayerTurn();
+            }
+        }
+
+        function checkDuelWin() {
+            if (enemy && enemy.hp <= 0) {
+                currentWave++; coins += 40; updateCoinsUI();
+                showStageBanner(`🏆 Victory! +40 Coins`);
+                setTimeout(() => { initDuelEnemy(); startPlayerTurn(); }, 1500);
+            }
+        }
+
+        function startAITurn() {
+            turn = 'ai'; document.getElementById("turn-indicator").innerText = `${currentBotName} shooting...`;
+            stopTimer(); if (!enemy || enemy.hp <= 0) return;
+
+            setTimeout(() => {
+                if (paused || player.hp <= 0 || !gameStarted) return;
+                playShootSound();
+                arrow.x = enemy.x; arrow.y = enemy.y - 50;
+                let dx = (player.x + player.width / 2) - arrow.x;
+                let dy = (player.y - 40) - arrow.y;
+                let time = 30;
+                arrow.vx = dx / time + (Math.random() - 0.5) * Math.max(2.0, 6.0 - (currentWave * 0.3));
+                arrow.vy = (dy - 0.5 * GRAVITY * time * time) / time + (Math.random() - 0.5) * Math.max(2.0, 6.0 - (currentWave * 0.3));
+                arrow.active = true; arrow.stuck = false; arrow.shooter = 'ai'; arrow.type = 'standard';
+                turn = 'animating'; updateWind();
+            }, 1200);
+        }
+
+        function startPlayerTurn() {
+            turn = 'player'; document.getElementById("turn-indicator").innerText = "Your turn";
+            startTimer();
+        }
+
+        function checkPlayerDeath() {
+            if (player.hp <= 0) {
+                stopTimer(); gameStarted = false;
+                let finalStage = currentWave - 1; let earned = finalStage * 10;
+                coins += earned; updateCoinsUI();
+                document.getElementById("gameover-stage").innerHTML = `<span>You reached</span>Stage ${finalStage}`;
+                document.getElementById("gameover-coins").innerText = `💰 +${earned} coins earned`;
+                document.getElementById("gameover-overlay").classList.remove("hidden");
+            }
+        }
+
+        function playAgainFromGameOver() {
+            document.getElementById("gameover-overlay").classList.add("hidden");
+            document.getElementById("game-container").classList.remove("hidden");
+            gameStarted = true; paused = false; currentWave = 1;
+            player.hp = player.maxHp; player.helmetHp = player.helmetMaxHp; player.chestHp = player.chestMaxHp; player.hits = [];
+            updatePlayerUI(); initDuelEnemy(); startPlayerTurn();
+        }
+        function mainMenuFromGameOver() {
+            document.getElementById("gameover-overlay").classList.add("hidden");
+            resetGame();
+        }
+        function showStageBanner(text) {
+            let el = document.getElementById("stage-banner");
+            el.innerText = text; el.classList.add("show");
+            clearTimeout(el._hideTimer);
+            el._hideTimer = setTimeout(() => el.classList.remove("show"), 1300);
+        }
+        function resetGame() {
+            gameStarted = false; paused = false; arrow.active = false; stopTimer();
+            document.getElementById("settings-overlay").classList.add("hidden");
+            document.getElementById("pause-badge").classList.add("hidden");
+            document.getElementById("gameover-overlay").classList.add("hidden");
+            document.getElementById("game-container").classList.add("hidden");
+            document.getElementById("main-menu").classList.remove("hidden");
+            updateCoinsUI();
+        }
+
+        function drawSpeechBubble(x, y, text) {
+            if (!text) return;
+            ctx.font = "bold 12px sans-serif";
+            let bw = ctx.measureText(text).width + 20, bh = 28, bx = x - bw / 2, by = y - bh - 14;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.96)"; ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 8); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = "#0f172a"; ctx.textAlign = "center"; ctx.fillText(text, x, by + 18); ctx.textAlign = "left";
+        }
+
+        function draw() {
+            if (!gameStarted) return;
+            ctx.save();
+            if (screenShakeTimer > 0) ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let sky = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+            sky.addColorStop(0, "#050811"); sky.addColorStop(1, "#1d4ed8");
+            ctx.fillStyle = sky; ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+
+            ctx.fillStyle = "#1e293b";
+            mountains.forEach(m => {
+                ctx.beginPath(); ctx.moveTo(m.x, GROUND_Y); ctx.lineTo(m.x + m.width/2, m.y); ctx.lineTo(m.x + m.width, GROUND_Y); ctx.fill();
+            });
+
+            let groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, canvas.height);
+            groundGrad.addColorStop(0, "#047857"); groundGrad.addColorStop(1, "#022c22");
+            ctx.fillStyle = groundGrad; ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+
+            drawCharacter(player, true);
+            if (enemy && enemy.hp > 0) {
+                drawCharacter(enemy, false);
+                ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; ctx.fillRect(enemy.x, enemy.y - enemy.height - 40, enemy.width, 5);
+                ctx.fillStyle = "#f43f5e"; ctx.fillRect(enemy.x, enemy.y - enemy.height - 40, enemy.width * (enemy.hp / enemy.maxHp), 5);
+            }
+
+            particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1.0; });
+            floatingTexts.forEach(ft => { ctx.font = "bold 14px sans-serif"; ctx.fillStyle = ft.color; ctx.globalAlpha = ft.alpha; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); ctx.globalAlpha = 1.0; ctx.textAlign = "left"; });
+
+            if (arrow.active) {
+                ctx.save(); ctx.translate(arrow.x, arrow.y); ctx.rotate(arrow.rotation);
+                ctx.fillStyle = arrow.type === 'fire' ? "#f97316" : arrow.type === 'poison' ? "#10b981" : arrow.type === 'heavy' ? "#38bdf8" : arrow.type === 'explosive' ? "#f59e0b" : arrow.type === 'laser' ? "#a855f7" : "#0f172a";
+                ctx.fillRect(-16, -4, 32, 8);
+                ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(7, 8); ctx.lineTo(7, -8); ctx.fillStyle = "#f8fafc"; ctx.fill();
+                ctx.restore();
+            }
+            
+            if(isAiming) {
+                 ctx.beginPath(); ctx.moveTo(player.x + 35, player.y - 50); ctx.lineTo(player.x + 35 - (startX - mouseX), player.y - 50 - (startY - mouseY));
+                 ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
+            }
+            ctx.restore();
+        }
+
+        function drawCharacter(char, isPlayer) {
+            ctx.lineWidth = 3; ctx.strokeStyle = "#0f172a"; ctx.fillStyle = char.color;
+            let cx = char.x + char.width / 2, headY = char.y - char.height - 18;
+
+            ctx.beginPath(); ctx.moveTo(cx, char.y - 30); ctx.lineTo(char.x + 6, char.y); ctx.moveTo(cx, char.y - 30); ctx.lineTo(char.x + char.width - 6, char.y); ctx.stroke();
+
+            ctx.fillStyle = isPlayer && selectedChest !== 'none' ? (selectedChest === 'leather' ? '#a16207' : selectedChest === 'iron' ? '#64748b' : selectedChest === 'knight' ? '#38bdf8' : selectedChest === 'gold' ? '#fbbf24' : '#06b6d4') : (isPlayer ? "#38bdf8" : "#f43f5e");
+            ctx.beginPath(); ctx.roundRect(char.x + 6, char.y - char.height + 12, char.width - 12, 50, 8); ctx.fill(); ctx.stroke();
+
+            ctx.beginPath(); ctx.arc(cx, headY, 18, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+            if (isPlayer && selectedHelmet !== 'none') {
+                ctx.fillStyle = selectedHelmet === 'leather' ? '#a16207' : selectedHelmet === 'iron' ? '#64748b' : selectedHelmet === 'knight' ? '#38bdf8' : selectedHelmet === 'gold' ? '#fbbf24' : '#06b6d4';
+                ctx.beginPath(); ctx.arc(cx, headY - 3, 17, Math.PI, Math.PI * 2); ctx.fill(); ctx.stroke();
+            }
+
+            ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(cx + (isPlayer ? 6 : -6), headY - 2, 3.5, 0, Math.PI * 2); ctx.fill();
+
+            let handX = isPlayer ? char.x + 35 : char.x + 15, handY = char.y - 50;
+            ctx.beginPath(); ctx.moveTo(cx, char.y - 50); ctx.lineTo(handX, handY); ctx.stroke();
+            ctx.beginPath(); if (isPlayer) ctx.arc(handX + 8, handY, 18, -Math.PI/2.1, Math.PI/2.1); else ctx.arc(handX - 8, handY, 18, Math.PI/2.1, -Math.PI/2.1);
+            ctx.strokeStyle = "#78350f"; ctx.lineWidth = 5; ctx.stroke();
+
+            char.hits.forEach(hit => {
+                ctx.fillStyle = "rgba(127, 29, 29, 0.98)"; ctx.beginPath(); ctx.arc(char.x + hit.x, char.y + hit.y, 10, 0, Math.PI * 2); ctx.fill();
+            });
+            if (char.speechTimer > 0) drawSpeechBubble(cx, headY - 20, char.speech);
+        }
+
+        function loop() { update(); draw(); requestAnimationFrame(loop); }
+        loop(); updateCoinsUI();
+    </script>
 </body>
 </html>
