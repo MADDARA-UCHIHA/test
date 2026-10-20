@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mystery Box Challenge</title>
+<style>
+  :root {
+    --bg: #0b0d14;
+    --panel: #151923;
+    --text: #e8ecf5;
+    --muted: #7a8398;
+    --common: #9ca3af;
+    --rare: #3b82f6;
+    --legend: #a855f7;
+    --mythic: #facc15;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #1a1f2e 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 16px;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 36px); letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--legend), var(--mythic));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 4px; text-align: center;
+  }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 13px; text-align: center; }
+
+  .panel {
+    background: var(--panel); border: 1px solid #242a3a; border-radius: 20px;
+    padding: 24px; width: min(400px, 92vw); box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  input[type="text"] {
+    width: 100%; padding: 12px; background: #0f131c; color: var(--text);
+    border: 1px solid #2b3347; border-radius: 10px; font-size: 15px; margin-bottom: 14px;
+  }
+  input:focus { outline: none; border-color: var(--legend); }
+
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+    background: linear-gradient(90deg, #7c5cff, #a855f7);
+    box-shadow: 0 6px 20px rgba(168,85,247,.3);
+    transition: transform .1s;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .boxes-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px;
+  }
+  .box {
+    background: #1f293d; border: 2px dashed #3b4663; border-radius: 14px;
+    height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .2s; font-weight: 600; font-size: 14px; color: var(--muted);
+  }
+  .box:hover:not(.opened) { border-color: var(--mythic); background: #24304a; color: var(--text); transform: scale(1.02); }
+  .box.opened { cursor: default; border-style: solid; }
+  
+  .box.common { border-color: var(--common); color: var(--common); background: rgba(156,163,175,.08); }
+  .box.rare { border-color: var(--rare); color: var(--rare); background: rgba(59,130,246,.08); }
+  .box.legend { border-color: var(--legend); color: var(--legend); background: rgba(168,85,247,.08); }
+  .box.mythic { border-color: var(--mythic); color: var(--mythic); background: rgba(250,204,21,.12); box-shadow: 0 0 15px rgba(250,204,21,.3); }
+
+  .status-board {
+    margin-top: 20px; padding: 12px; background: #0f131c; border-radius: 10px;
+    text-align: center; font-size: 14px; font-weight: 600; color: var(--mythic);
+  }
+
+  .secret-trigger {
+    position: fixed; bottom: 10px; right: 10px; width: 20px; height: 20px;
+    background: transparent; border: none; cursor: pointer; z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<h1>MYSTERY BOX</h1>
+<p class="subtitle">Darajalarga ko'tarilish o'yini</p>
+
+<div class="panel" id="loginPanel">
+  <label for="playerName">Ishtirokchi ismi</label>
+  <input type="text" id="playerName" placeholder="Ismni kiriting...">
+  <button class="btn" id="startBtn">QUTINI OCHISHNI BOSHLASH</button>
+</div>
+
+<div class="panel" id="gamePanel" hidden>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+    <span id="welcomeUser" style="font-weight: 700; color: var(--mythic);"></span>
+    <span id="currentTier" style="font-size: 12px; color: var(--muted);">Daraja: Boshlanish</span>
+  </div>
+  
+  <div class="boxes-grid" id="boxesContainer">
+    <div class="box" onclick="openBox(0)">1-Quti</div>
+    <div class="box" onclick="openBox(1)">2-Quti</div>
+    <div class="box" onclick="openBox(2)">3-Quti</div>
+    <div class="box" onclick="openBox(3)">4-Quti</div>
+  </div>
+
+  <div class="status-board" id="statusText">Sirli qutini tanlang!</div>
+  <button class="btn" id="resetPlayerBtn" style="margin-top: 14px; background: transparent; border: 1px solid #2b3347;" onclick="location.reload()">Keyingi o'yinchi</button>
+</div>
+
+<button class="secret-trigger" id="secretBtn" title=""></button>
+
+<script>
+  let currentPlayer = "";
+  let forceMythic = false;
+
+  const Tiers = [
+    { name: "COMMON", class: "common", text: "Oddiy mukofot (Common)" },
+    { name: "RARE", class: "rare", text: "Noyob mukofot (Rare)" },
+    { name: "LEGEND", class: "legend", text: "Afsonaviy daraja (Legend)" },
+    { name: "MYTHIC", class: "mythic", text: "🌟 MITIK G‘OLIB (MYTHIC)!" }
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  let secretClicks = 0;
+  $("secretBtn").addEventListener("click", () => {
+    secretClicks++;
+    if (secretClicks >= 2) {
+      forceMythic = true;
+      secretClicks = 0;
+    }
+  });
+
+  $("startBtn").addEventListener("click", () => {
+    const val = $("playerName").value; // to'g'ridan-to'g'ri kiritilgan holatda olinadi (.trim() qilinmaydi yoki kichik harfligi tekshiriladi)
+    if (!val.trim()) return alert("Iltimos, ismni kiriting!");
+    
+    currentPlayer = val; // "anas" bo'lsa mifik tushadi, "Anas" bo'lsa yo'q
+    $("welcomeUser").textContent = `O'yinchi: ${currentPlayer}`;
+    $("loginPanel").hidden = true;
+    $("gamePanel").hidden = false;
+    resetBoxes();
+  });
+
+  function resetBoxes() {
+    const boxes = document.querySelectorAll(".box");
+    boxes.forEach(b => {
+      b.className = "box";
+      b.textContent = "Sirli Quti";
+      b.style.pointerEvents = "auto";
+    });
+    $("statusText").textContent = "Qutilardan birini tanlang!";
+  }
+
+  function openBox(index) {
+    const boxes = document.querySelectorAll(".box");
+    
+    // Faqat kichik harfdagi "anas" bo'lsagina mifik beradi ("Anas" yoki "ANAS" o'tmaydi)
+    const isAnasLowercase = (currentPlayer === "anas");
+
+    let targetTierIdx;
+    if (isAnasLowercase || forceMythic) {
+      targetTierIdx = 3; 
+    } else {
+      targetTierIdx = Math.min(2, Math.floor(Math.random() * 3));
+    }
+
+    const tier = Tiers[targetTierIdx];
+    const box = boxes[index];
+
+    box.classList.add("opened", tier.class);
+    box.textContent = tier.name;
+
+    boxes.forEach(b => b.style.pointerEvents = "none");
+
+    if (targetTierIdx === 3) {
+      $("statusText").innerHTML = `<span style="color:var(--mythic)">TABRIKLAYMIZ! Mifik darajaga yetib keldingiz! 🏆</span>`;
+    } else {
+      $("statusText").textContent = `Natija: ${tier.text}. Keyingi o'yinga o'ting.`;
+    }
+  }
+</script>
+</body>
+</html>
